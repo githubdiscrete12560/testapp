@@ -65,7 +65,7 @@ def login():
 def dashboard():
     if "user" not in session:
         return redirect("/")
-    return f"?? Welcome! You’re logged in as user ID {session['user']}."
+    return f"?? Welcome! Youï¿½re logged in as user ID {session['user']}."
 
 @app.route("/logout")
 def logout():
