@@ -36,19 +36,9 @@ def signup():
     if error:
         flash(f"Sign-up error: {error.message}", "danger")
         return redirect("/")
-    else:
-        # Success case - user created successfully
-        user_id = data[0]["id"]
-        user_email = data[0]["email"]
-        
-        # Set user session
-        session["user"] = user_id
-        
-        # Success message
-        flash(f"Welcome! Your account has been created successfully.", "success")
-        return redirect("/dashboard") 
-    #session["user"] = data[0]["id"]
-    #return redirect("/dashboard")
+     
+    session["user"] = data[0]["id"]
+    return redirect("/dashboard")
 
 @app.route("/login", methods=["POST"])
 def login():
