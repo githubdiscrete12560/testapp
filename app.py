@@ -36,7 +36,7 @@ def signup():
     if error:
         flash(f"Sign-up error: {error.message}", "danger")
         return redirect("/")
-     else:
+    else:
         # Success case - user created successfully
         user_id = data[0]["id"]
         user_email = data[0]["email"]
