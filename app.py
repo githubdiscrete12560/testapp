@@ -34,11 +34,24 @@ def signup():
     }).execute()
 
     if error:
-        flash(f"Sign-up error: {error.message}", "danger")
+        # Error case - handle different types of errors
+        if "duplicate key" in str(error).lower() or "already exists" in str(error).lower():
+            flash("An account with this email already exists. Please try logging in instead.", "warning")
+        else:
+            flash(f"Sign-up error: {error.message}", "danger")
         return redirect("/")
-     
-    session["user"] = data[0]["id"]
-    return redirect("/dashboard")
+    else:
+        # Success case - user created successfully
+        user_id = data[0]["id"]
+        user_email = data[0]["email"]
+        
+        # Set user session
+        session["user"] = user_id
+        
+        # Success message
+        flash(f"Welcome! Your account has been created successfully.", "success")
+        
+        return redirect("/dashboard")
 
 @app.route("/login", methods=["POST"])
 def login():
@@ -50,28 +63,44 @@ def login():
     users = resp.data
 
     if not users:
-        flash("No account found with that email.", "warning")
+        # No user found with this email
+        flash("No account found with that email. Please check your email or sign up.", "warning")
         return redirect("/")
-    user = users[0]
+    else:
+        # User found - check password
+        user = users[0]
 
-    # Verify password
-    if not check_password_hash(user["password_hash"], password):
-        flash("Incorrect password.", "danger")
-        return redirect("/")
-
-    session["user"] = user["id"]
-    flash(f"Welcome! Your account has been logged in successfully.", "success")
-    return redirect("/dashboard")
+        if not check_password_hash(user["password_hash"], password):
+            # Incorrect password
+            flash("Incorrect password. Please try again.", "danger")
+            return redirect("/")
+        else:
+            # Login successful
+            session["user"] = user["id"]
+            flash(f"Welcome back! You've been logged in successfully.", "success")
+            return redirect("/dashboard")
 
 @app.route("/dashboard")
 def dashboard():
     if "user" not in session:
+        flash("Please log in to access the dashboard.", "warning")
         return redirect("/")
-    return f"?? Welcome! You�re logged in as user ID {session['user']}."
+    else:
+        # User is logged in
+        user_id = session["user"]
+        return f"Welcome to your dashboard! You're logged in as user ID {user_id}."
 
 @app.route("/logout")
 def logout():
-    session.clear()
+    if "user" in session:
+        flash("You've been logged out successfully.", "info")
+        session.clear()
+    else:
+        flash("You weren't logged in.", "info")
+    return redirect("/")
+
+if __name__ == "__main__":
+    app.run(host="0.0.0.0", port=int(os.getenv("PORT", 5000)), debug=True)
     return redirect("/")
 
 if __name__ == "__main__":
